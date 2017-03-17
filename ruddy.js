@@ -204,6 +204,35 @@ $Export
     );
 
 /**
+ * RuddyJS Window Properties - NodeList
+ *
+ * @package     ruddy
+ * @module      NodeList
+ * @author      Gil Nimer <info@ruddymonkey.com>
+ * @author      Nick Vlug <info@ruddy.nl>
+ * @copyright   RuddyJS licensed under MIT. Copyright (c) 2017 Ruddy Monkey & ruddy.nl
+ */
+
+var $Export = $Export || require('../export');
+
+$Export
+    .module(
+        'NodeList',
+        'NodeList',
+        './window/nodes'
+    )
+    .include([
+        'window'
+    ])
+    .init(
+        this,
+        module,
+        function(window){
+            return window.NodeList || {prototype: {}};
+        }
+    );
+
+/**
  * RuddyJS Window Properties - CSSStyleSheet
  *
  * @package     ruddy
@@ -702,13 +731,9 @@ $Export
                 if(__core.isArr(arr) === false)
                     throw new TypeError("Array type - argument provided is not an array type");
 
-                /**
-                 *
-                 * @type {{isEmpty: (exports|module.exports|module:$arr.isEmpty), join: (*|Function), push: (*|Function), pop: (*|Function), reverse: (*|Function), concat: (*|Function), forEach: (*|Function), map: (*|Function), reduce: (*|Function), indexOf: (*|Function), first: (exports|module.exports|module:$arr.first), last: (exports|module.exports|module:$arr.last)}}
-                 */
                 var prototype = {
                     /**
-                     * Checks if array is empty
+                     * Checks if an array is empty
                      *
                      * @function
                      * @inner
@@ -719,6 +744,31 @@ $Export
                      */
                     isEmpty: function() {
                         return (arr.length == 0);
+                    },
+
+                    /**
+                     * Get all keys of an array
+                     *
+                     * @function
+                     * @inner
+                     * @memberof module:$arr
+                     * @description Get all keys of an array
+                     *
+                     * @returns {Array}
+                     */
+                    keys: function() {
+                        "use strict";
+                        var r = [], i = 0;
+
+                        if(arr.isEmpty())
+                            return [];
+
+
+                        for(i; i < arr.length; i++) {
+                            r[i] = i;
+                        }
+
+                        return r;
                     },
 
                     /**
@@ -1407,11 +1457,32 @@ $Export
                 if(__core.isObj(obj) === false)
                     throw new TypeError("Object type - argument provided is not an object type");
 
-                /**
-                 *
-                 * @type {{keys: keys, values: values, push: push, map: map, forEach: forEach, assign: assign, extend: extend}}
-                 */
                 var prototype = {
+                    hasOwnProperty: function(k) {
+                        return Object.hasOwnProperty(this, k) && !Object.hasOwnProperty(prototype, k);
+                    },
+
+                    /**
+                     * Checks if an object is empty
+                     *
+                     * @function
+                     * @inner
+                     * @memberof module:$nodes
+                     * @description Checks if an object is empty
+                     *
+                     * @returns {boolean}
+                     */
+                    isEmpty: function() {
+                        var k;
+
+                        for(k in obj) {
+                            if(prototype.hasOwnProperty.call(obj, k))
+                                return false;
+                        }
+
+                        return true;
+                    },
+
                     /**
                      * Get all keys of an object
                      *
@@ -1426,8 +1497,11 @@ $Export
                         "use strict";
                         var k, r = [], i = 0;
 
+                        if(obj.isEmpty())
+                            return [];
+
                         for(k in obj) {
-                            if(!prototype[k]){
+                            if(!prototype.hasOwnProperty.call(obj, k)){
                                 r[i] = k;
                                 i++;
                             }
@@ -1450,8 +1524,11 @@ $Export
                         "use strict";
                         var k, r = [], i = 0;
 
+                        if(obj.isEmpty())
+                            return [];
+
                         for(k in obj) {
-                            if(!prototype[k]){
+                            if(!prototype.hasOwnProperty.call(obj, k)){
                                 r[i] = obj[k];
                                 i++;
                             }
@@ -1711,12 +1788,15 @@ $Export
         '../globals/nodes'
     )
     .include([
+        'NodeList',
         '@core'
     ])
     .init(
         this,
         module,
-        function (__core) {
+        function (NodeList, __core) {
+            "use strict";
+
             /**
              * Global NodeList Wrapper
              *
@@ -1731,30 +1811,66 @@ $Export
                 if(__core.isNodes(nodes) === false)
                     throw new TypeError("Nodes type - argument provided is not a nodeList type");
 
-                /**
-                 *
-                 * @type {{push: (exports|module.exports|module:$nodes.push), concat: (exports|module.exports|module:$nodes.concat), forEach: (*|Function), map: (exports|module.exports|module:$nodes.map), first: (exports|module.exports|module:$nodes.first), last: (exports|module.exports|module:$nodes.last), isOne: (exports|module.exports|module:$nodes.isOne), indexOf: (exports|module.exports|module:$nodes.indexOf)}}
-                 */
+
                 var prototype = {
                     /**
-                     * Native push function for a nodeList
+                     * Checks if a node list is empty
                      *
                      * @function
                      * @inner
                      * @memberof module:$nodes
-                     * @description Native push function for a nodeList
+                     * @description Checks if a node list is empty
                      *
-                     * @returns {Number}
+                     * @returns {boolean}
                      */
-                    push: function () {
-                        "use strict";
-                        var arg = arguments, l = arg.length, i = 0;
+                    isEmpty: function() {
+                        return (nodes.length == 0);
+                    },
 
-                        for(i; i !== l; i++) {
-                            nodes[nodes.length] = arg[i];
+                    /**
+                     * Get all keys of a node list
+                     *
+                     * @function
+                     * @inner
+                     * @memberof module:$nodes
+                     * @description Get all keys of a node list
+                     *
+                     * @returns {Array}
+                     */
+                    keys: function() {
+                        "use strict";
+                        var r = [], i = 0;
+
+                        if(nodes.isEmpty())
+                            return [];
+
+                        for(i; i < nodes.length; i++) {
+                            r[i] = i;
                         }
 
-                        return nodes.length;
+                        return r;
+                    },
+
+                    /**
+                     * Native indexOf function for a nodeList
+                     *
+                     * @function
+                     * @inner
+                     * @memberof module:$nodes
+                     * @description Native indexOf function for a nodeList
+                     * @param value
+                     *
+                     * @returns {*}
+                     */
+                    indexOf: function(value) {
+                        "use strict";
+                        var a = nodes, key;
+                        for (key in a) {
+                            if(value == a[key]) {
+                                return key;
+                            }
+                        }
+                        return -1;
                     },
 
                     /**
@@ -1789,7 +1905,7 @@ $Export
                      * @param f
                      * @param p
                      */
-                    forEach: (Array.prototype.forEach || function (f, p) {
+                    forEach: (NodeList.prototype.forEach || function (f, p) {
                         "use strict";
                         if (typeof f !== 'function')
                             throw new TypeError(f + ' is not a function');
@@ -1799,31 +1915,6 @@ $Export
                             f.call(p, a[i], i, a);
                         }
                     }),
-
-                    /**
-                     * Native map function for a nodeList
-                     *
-                     * @function
-                     * @inner
-                     * @memberof module:$nodes
-                     * @description Native map function for a nodeList
-                     *
-                     * @param f
-                     * @param p
-                     *
-                     * @returns {Array}
-                     */
-                    map: function (f, p) {
-                        "use strict";
-                        var t = nodes, a = [], i = 0, l = t.length, v;
-
-                        for(i; i != l; i++) {
-                            v = t[i];
-                            a[i] = p ? f.call(p, v, i, t) : f(v, i, t);
-                        }
-
-                        return a;
-                    },
 
                     /**
                      * Get first element
@@ -1862,39 +1953,24 @@ $Export
                     },
 
                     /**
-                     * Checks if a node list is empty
+                     * Convert to an array
                      *
                      * @function
                      * @inner
                      * @memberof module:$nodes
-                     * @description Checks if a node list is empty
+                     * @description Convert to an array
                      *
-                     * @returns {boolean}
+                     * @returns {Array}
                      */
-                    isEmpty: function() {
-                        return (nodes.length == 0);
-                    },
+                    toArray: function(){
+                        var a = [], i = 0;
 
-                    /**
-                     * Native indexOf function for a nodeList
-                     *
-                     * @function
-                     * @inner
-                     * @memberof module:$nodes
-                     * @description Native indexOf function for a nodeList
-                     * @param value
-                     *
-                     * @returns {*}
-                     */
-                    indexOf: function(value) {
-                        "use strict";
-                        var a = nodes, key;
-                        for (key in a) {
-                            if(value == a[key]) {
-                                return key;
-                            }
+                        for(i; i < nodes.length; i++) {
+                            a[i] = nodes[i];
                         }
-                        return -1;
+
+                        nodes = a;
+                        return nodes;
                     }
                 };
 
@@ -2677,7 +2753,7 @@ $Export
  * @author      Nick Vlug <info@ruddy.nl>
  * @copyright   RuddyJS licensed under MIT. Copyright (c) 2017 Ruddy Monkey & ruddy.nl
  *
- * @param       {String|Element|NodeList|Array} param With Ruddy DOM global wrapper you can manipulate Elements and Arrays with the `param` parameter
+ * @param       {String|Element|NodeList|Array} param With Ruddy DOM global wrapper you can manipulate Elements and Arrays with the `param` argument
  * @returns     {Object}
  *
  * @description
@@ -2893,60 +2969,73 @@ $Export
             }));
 
             /**
-             * Change/get css value
+             * Get/Set/Append innerHTML
              *
              * @method html
              * @memberof module:$r
              *
-             * @param style
              * @param value
              *
              * @returns {*}
              */
             $r.assign('html', $func (function(content) {
                 var el = this.el;
-                if(typeof content === 'undefined')
-                    return el.innerHTML;
 
-                return {
-                    inner: function () {
+                if(__core.isEl(el) === false)
+                    throw new TypeError("$r `this.el` is not an element");
+
+                if(content) {
+                    if (__core.isFunc(content))
+                        return el.innerHTML = content.call(el);
+
+                    return el.innerHTML = content;
+                }
+
+                return __core.assign(el.innerHTML, {
+                    append: function (content) {
                         if (__core.isFunc(content))
-                            return el.innerHTML = content.call(el);
-
-                        return el.innerHTML = content;
-                    },
-
-                    append: function () {
-                        if (__core.isFunc(content))
-                            return el.innerHTML += content.call(el);
+                            return (el.innerHTML += content.call(el));
 
                         return (el.innerHTML += content);
                     }
-                }
+                });
             }));
 
             /**
-             * Get/Set Attribute
+             * Get/Set/Append/Remove Attribute
              *
              * @method attribute
              * @memberof module:$r
              *
              * @param name
+             * @param value
              *
-             * @returns {*|string}
+             * @returns {*|String}
              */
             $r.assign('attribute', $func (function(name, value) {
-                if(__core.isEl(this.el) === false)
-                    throw new TypeError("$r argument provided is not an element");
+                var el = this.el, attr;
 
-                if(!value)
-                    return this.el.getAttribute(name);
+                if(__core.isEl(el) === false)
+                    throw new TypeError("$r `this.el` is not an element");
 
-                return this.el.setAttribute(name, value);
+                if(value)
+                    return el.setAttribute(name, value.toString());
+
+                attr = el.getAttribute(name);
+
+                return __core.assign(attr, {
+                    append: function (value) {
+                        return el.setAttribute(name, attr + value.toString());
+                    },
+
+                    remove: function() {
+                        return el.removeAttribute(name);
+                    }
+                });
             }));
 
             /**
-             * Get/Set Value
+             * Get/Set/Append Value
              *
              * @method value
              * @memberof module:$r
@@ -2956,13 +3045,59 @@ $Export
              * @returns {*|string}
              */
             $r.assign('value', $func (function(value) {
-                if(__core.isEl(this.el) === false)
-                    throw new TypeError("$r argument provided is not an element");
+                var el = this.el;
+
+                if(__core.isEl(el) === false)
+                    throw new TypeError("$r `this.el` is not an element");
 
                 if(value)
-                    return this.el.value = value;
+                    return el.value = value.toString();
 
-                return this.el.value;
+                return __core.assign(el.value, {
+                    append: function (value) {
+                        return (el.value += value);
+                    }
+                });
+            }));
+
+            /**
+             * Get/Set Id
+             *
+             * @method id
+             * @memberof module:$r
+             *
+             * @param id
+             *
+             * @returns {*|string}
+             */
+            $r.assign('id', $func (function(id) {
+                if(__core.isEl(this.el) === false)
+                    throw new TypeError("$r `this.el` is not an `Element` type");
+
+                if(id)
+                    return this.el.id = id.toString();
+
+                return this.el.id;
+            }));
+
+            /**
+             * Get/Set className
+             *
+             * @method class
+             * @memberof module:$r
+             *
+             * @param className
+             *
+             * @returns {*|string}
+             */
+            $r.assign('class', $func (function(className) {
+                if(__core.isEl(this.el) === false)
+                    throw new TypeError("$r `this.el` is not an `Element` type");
+
+                if(className)
+                    return this.el.className = className.toString();
+
+                return this.el.className;
             }));
 
             /**
@@ -3021,142 +3156,6 @@ $Export
             }));
 
             /**
-             * If statment
-             *
-             * @method when
-             * @memberof module:$r
-             * @param expression
-             *
-             * @returns {$r}
-             */
-            $r.assign('if', $func (function(expression, callback) {
-                this.total = 1;
-                this.count = 0;
-
-                if(expression) {
-                    this.count++;
-                }
-
-                if(this.count == this.total && callback) {
-                    callback.call(this, this.el);
-                }
-
-                return this;
-            }));
-
-
-            /**
-             * If statment
-             *
-             * @method when
-             * @memberof module:$r
-             * @param expression
-             *
-             * @returns {$r}
-             */
-            $r.assign('elseif', $func (function(expression, callback) {
-                if(this.count != 1) {
-                    if(expression) {
-                        this.count++;
-                        this.total = 0;
-                    }
-                }
-
-                this.total++;
-
-                if(this.count == this.total && callback) {
-                    callback.call(this, this.el);
-                }
-
-                return this;
-            }));
-
-
-            /**
-             * Execute else statment
-             *
-             * @method catch
-             * @memberof module:$r
-             * @param callback
-             *
-             * @returns {$r}
-             */
-            $r.assign('else', $func (function(callback) {
-                if(this.count != 1) {
-                    this.count++;
-                    this.total = 1;
-                    callback.call(this, this.el);
-                }
-
-                this.total++;
-                return this;
-            }));
-
-            /**
-             * If statment
-             *
-             * @method when
-             * @memberof module:$r
-             * @param expression
-             *
-             * @returns {$r}
-             */
-            $r.assign('when', $func (function(expression, callback) {
-                this.total = 1;
-                this.count = 0;
-
-                expression =
-                    (typeof expression == 'function') ? expression.call(this) : expression;
-
-                if(expression) {
-                    this.count++;
-                }
-
-                return this;
-            }));
-
-            /**
-             * Execute if statment
-             *
-             * @method do
-             * @memberof module:$r
-             * @param callback
-             *
-             * @returns {$r}
-             */
-            $r.assign('do', $func (function(callback) {
-                if(this.count == this.total) {
-                    callback.call(this, this.el);
-                }
-
-                return this;
-            }));
-
-            /**
-             * ELse if statment
-             *
-             * @method or
-             * @memberof module:$r
-             * @param expression
-             *
-             * @returns {$r}
-             */
-            $r.assign('or', $func (function(expression, callback) {
-                expression =
-                    (typeof expression == 'function') ? expression.call(this) : expression;
-
-                if(this.count != 1) {
-                    if(expression) {
-                        this.count++;
-                        this.total = 0;
-                    }
-                }
-
-                this.total++;
-                return this;
-            }));
-
-            /**
              * Event listener
              *
              * @method on
@@ -3166,10 +3165,10 @@ $Export
              * @returns {boolean}
              */
             $r.assign('on', $func (function(listener, callback, settings) {
-                var obj = this.el, target, calls = 0;
+                var self = this, obj = this.el, target, calls = 0;
 
                 if(listener in __core.events){
-                    obj.calls = __core.events[listener].call(this, obj, callback, settings);
+                    obj.calls = __core.events[listener].call(self, obj, callback, settings);
                     return;
                 }
 
@@ -3178,7 +3177,7 @@ $Export
                     target = e.target || e.srcElement;
 
                     calls++;
-                    callback.call(this, e, target, obj, calls);
+                    callback.call(self, e, target, obj, calls);
                 }, false);
             }));
 
